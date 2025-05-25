@@ -1,0 +1,27 @@
+@st.cache_data
+def load_data():
+    # TMDB 데이터
+    tmdb_movies = pd.read_csv('tmdb_5000_movies.csv')
+    tmdb_credits = pd.read_csv('tmdb_5000_credits.csv')
+    tmdb_credits.rename(columns={'movie_id': 'id'}, inplace=True)
+    tmdb_data = pd.merge(tmdb_movies, tmdb_credits, on='id')
+
+    tmdb_data = tmdb_data[['id', 'title', 'overview', 'genres', 'cast', 'crew', 'poster_path', 'vote_average']]
+    tmdb_data['overview'] = tmdb_data['overview'].fillna('')
+
+    # 장르 정제
+    def parse_genres(genre_str):
+        try:
+            genres = [g['name'] for g in ast.literal_eval(genre_str)]
+            return ", ".join(genres)
+        except:
+            return ''
+    tmdb_data['genres'] = tmdb_data['genres'].apply(parse_genres)
+
+    # MovieLens 데이터
+    ratings = pd.read_csv('ratings.csv')     # userId, movieId, rating
+    movies = pd.read_csv('movies.csv')       # movieId, title
+
+    return tmdb_data, ratings, movies
+
+tmdb_data, ratings, movies = load_data()
