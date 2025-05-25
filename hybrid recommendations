@@ -1,0 +1,16 @@
+def hybrid_recommendations(user_id, liked_title, num=10):
+    content_movie_ids = content_based_recommendations(liked_title, num * 2)
+    if not content_movie_ids:
+        return []
+
+    results = []
+    for movie_id in content_movie_ids:
+        try:
+            pred = model.predict(user_id, movie_id)
+            title = tmdb_data[tmdb_data['id'] == movie_id]['title'].values[0]
+            results.append((title, pred.est))
+        except:
+            continue
+
+    results.sort(key=lambda x: x[1], reverse=True)
+    return [title for title, _ in results[:num]]
