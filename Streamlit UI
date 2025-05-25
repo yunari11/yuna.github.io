@@ -1,0 +1,36 @@
+st.set_page_config(page_title="영화 추천 시스템", layout="wide")
+st.title("하이브리드 영화 추천 시스템")
+st.markdown("###TMDB + MovieLens 기반 영화 추천 시스템")
+
+# 사용자 입력
+user_id = st.number_input("사용자 ID 입력 (예: 1~610)", min_value=1, max_value=610, value=1)
+liked_movie = st.selectbox("좋아하는 영화 선택", tmdb_data['title'].sort_values().unique())
+
+# 추천 버튼
+if st.button("추천 받기"):
+    recommendations = hybrid_recommendations(user_id, liked_movie)
+    
+    if recommendations:
+        st.subheader("추천 영화 목록")
+        
+        for i, title in enumerate(recommendations, 1):
+            movie_row = tmdb_data[tmdb_data['title'] == title].iloc[0]
+            poster_path = movie_row['poster_path']
+            genre = movie_row['genres']
+            vote = movie_row['vote_average']
+
+            # 포스터 URL
+            poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if pd.notnull(poster_path) else ""
+
+            # 영화 정보 출력
+            st.markdown(f"### {i}. {title}")
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                if poster_url:
+                    st.image(poster_url, width=120)
+            with col2:
+                st.write(f"**장르**: {genre}")
+                st.write(f"**TMDB 평점**: ⭐ {vote}/10")
+                st.markdown("---")
+    else:
+        st.warning("추천 결과가 없습니다. 영화 제목 또는 사용자 ID를 확인해주세요.")
