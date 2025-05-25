@@ -1,0 +1,19 @@
+@st.cache_data
+def build_content_model(tmdb_data):
+    tfidf = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = tfidf.fit_transform(tmdb_data['overview'])
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+    indices = pd.Series(tmdb_data.index, index=tmdb_data['title']).drop_duplicates()
+    return cosine_sim, indices
+
+cosine_sim, indices = build_content_model(tmdb_data)
+
+def content_based_recommendations(title, num=10):
+    if title not in indices:
+        return []
+    idx = indices[title]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:num+1]
+    movie_indices = [i[0] for i in sim_scores]
+    return tmdb_data['id'].iloc[movie_indices].tolist()
