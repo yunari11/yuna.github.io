@@ -1,0 +1,10 @@
+@st.cache_resource
+def build_collaborative_model(ratings):
+    reader = Reader(rating_scale=(0.5, 5.0))
+    data = Dataset.load_from_df(ratings[['userId', 'movieId', 'rating']], reader)
+    trainset, _ = train_test_split(data, test_size=0.2, random_state=42)
+    model = SVD()
+    model.fit(trainset)
+    return model
+
+model = build_collaborative_model(ratings)
